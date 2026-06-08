@@ -1,12 +1,13 @@
 package main
 
 import (
-	"net/http"
+	// "net/http"
+	"os"
 
 	"neneloga.local/server"
 
-	// "log"
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,26 +16,24 @@ func main() {
 	fmt.Print("Starting server...")
 
 	r := gin.Default()
-  r.SetTrustedProxies([]string{"192.168.1.2"})
+	r.SetTrustedProxies([]string{"192.168.1.2"})
+	proxy := os.Getenv("TRUSTED_PROXY") // "192.168.1.2" in dev, real LB IP in prod
+	if proxy != "" {
+		r.SetTrustedProxies([]string{proxy})
+	}
+	r.GET("/ping", server.Ping)
 
-	r.GET("/ping",server.Ping )
-	
-
-
-
-
-	http.HandleFunc("/",server.Home)
-	http.HandleFunc("/rait",server.FileWrite)
-
-	// 404
-	http.HandleFunc("/404",server.NotFound)
-
-
+	r.GET("/", server.Home) // move everything here
+	// r.POST("/rait", server.FileWrite)
+	r.NoRoute(server.NotFound)
 
 	// log.Fatal(
-		// http.ListenAndServe(":8080", nil)
-		r.Run()
-		fmt.Println("server running on :8080")
+	// http.ListenAndServe(":8080", nil)
+	fmt.Println("server running on :8080")
+	if err := r.Run(":8080"); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+		fmt.Println(err)
+	}
 	// )
 
 }
