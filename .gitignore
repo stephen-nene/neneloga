@@ -5,6 +5,8 @@
 *.so
 *.dylib
 *.test
+*.sum
+# *.mod
 
 # Build output
 /bin/
@@ -54,3 +56,5 @@ Thumbs.db
 
 # Debug artifacts
 *.pdb
+
+*.env
