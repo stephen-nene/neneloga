@@ -1,1 +1,56 @@
-/target
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Build output
+/bin/
+/dist/
+/out/
+
+# Go build cache
+*.out
+
+# Go coverage
+coverage.out
+coverage.html
+
+# Go workspace / module cache (rarely needed)
+vendor/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+
+
+
+# Build output
+/target/
+
+# Cargo.lock (optional rule depending on project type)
+# - keep for binaries
+# - ignore for libraries (optional choice)
+Cargo.lock
+
+# Rust analyzer / IDE
+/.idea/
+/.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Debug artifacts
+*.pdb
