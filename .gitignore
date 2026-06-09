@@ -12,6 +12,7 @@
 /bin/
 /dist/
 /out/
+tmp/
 
 # Go build cache
 *.out
@@ -36,6 +37,8 @@ Thumbs.db
 
 # Build output
 /target/
+
+#
 
 # Cargo.lock (optional rule depending on project type)
 # - keep for binaries
