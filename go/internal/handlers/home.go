@@ -1,39 +1,22 @@
-package server
+package handlers
+
 
 import (
 	"fmt"
-	// "os"
 	"net/http"
-	// "log"
+
 	"github.com/gin-gonic/gin"
 )
 
-type Input struct {
-	Name string `json:"name"`
-	Body []byte `json:"body"`
-}
-
-type Output struct {
-	Message string `json:"message"`
-}
-
-func Ping(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "pong",
-	})
-}
-
-// func FileWrite(w http.ResponseWriter, r *http.Request) {
-
-// }
-
 func Home(c *gin.Context) {
-	fmt.Println("Home",c.RemoteIP())
+	fmt.Println("Home", c.RemoteIP())
 	// fmt.Println(r.RemoteAddr)
 	c.JSON(200, gin.H{
-		"message": "welcome"+c.ClientIP(),
+		"message": "welcome" + c.ClientIP(),
 	})
 }
+
+
 
 func NotFound(c *gin.Context) {
 	if c.Request == nil {

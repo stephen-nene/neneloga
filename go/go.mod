@@ -1,4 +1,4 @@
-module neneloga.local
+module neneloga
 
 go 1.25.4
 
