@@ -19,13 +19,18 @@ func SetupRouter() *gin.Engine {
 
 	r.GET("/chuck",handlers.ChuckNorris)
 
+	// r.GET("/users")
+
 	// r.GET("/ping", handlers.Ping)
 
-	// user := r.Group("/users")
-	// {
-	//     user.GET("/", handler.GetUsers)
-	//     user.POST("/", handler.CreateUser)
-	// }
+	user := r.Group("/users")
+	{
+	    user.GET("/", handlers.GetUsers)
+		user.GET("/:id", handlers.GetUser)
+	    user.POST("/", handlers.CreateUser)
+		user.PUT("/:id", handlers.UpdateUser)
+		user.DELETE("/:id", handlers.DeleteUser)
+	}
 
 	r.NoRoute(handlers.NotFound)
 

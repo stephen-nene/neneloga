@@ -5,7 +5,6 @@ import (
 	"os"
 	"fmt"
 	"log"
-	"context"
 
 	"neneloga/internal/router"
 	"neneloga/internal/db"
@@ -22,7 +21,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer conn.Close(context.Background())
+	sqlDB, err := conn.DB()
+	if err == nil {
+		defer sqlDB.Close()
+	}
 
 	r.SetTrustedProxies([]string{"192.168.1.2"})
 

@@ -21,6 +21,8 @@ services:
       # - redis
       # - postgres
 
+# docker exec neneloga-db psql -U steve -d neneloga -c "\dt"
+
 
   redis:
     image: redis:8.0-alpine
