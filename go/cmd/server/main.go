@@ -5,8 +5,10 @@ import (
 	"os"
 	"fmt"
 	"log"
+	"context"
 
 	"neneloga/internal/router"
+	"neneloga/internal/db"
 )
 
 func main() {
@@ -16,6 +18,11 @@ func main() {
 
 	r := router.SetupRouter()
 
+	conn, err := db.Connect()
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer conn.Close(context.Background())
 
 	r.SetTrustedProxies([]string{"192.168.1.2"})
 
@@ -24,7 +31,6 @@ func main() {
 	if proxy != "" {
 		r.SetTrustedProxies([]string{proxy})
 	}
-
 
 	// r.POST("/rait", server.FileWrite)
 
