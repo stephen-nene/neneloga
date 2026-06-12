@@ -5,8 +5,9 @@
 *.so
 *.dylib
 *.test
-*.sum
+# *.sum
 # *.mod
+*.db
 
 # Build output
 /bin/

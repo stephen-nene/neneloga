@@ -8,15 +8,47 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// func Home(c *gin.Context) {
+// 	fmt.Println("Home", c.RemoteIP())
+// 	fmt.Println(c.Request,c.Request.Response)
+// 	c.JSON(200, gin.H{
+// 		// "message": "welcome" + c.ClientIP(),
+// 		// "header": c.Request.Header,
+// 		"home": c.Request.RequestURI,
+// 		"health": c.Request.RequestURI,
+// 		"chuck": c.Request.RequestURI,
+// 		"users": c.Request.RequestURI,
+// 		"users/:id": c.Request.RequestURI,
+// 	})
+// }
+
+// Home godoc
+// @Summary      Home endpoint
+// @Description  Get a list of all available endpoints
+// @Tags         system
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Router       / [get]
 func Home(c *gin.Context) {
-	fmt.Println("Home", c.RemoteIP())
-	// fmt.Println(r.RemoteAddr)
+	host := c.Request.Host
+	scheme := "http"
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
+
+	baseURL := scheme + "://" + host
+
 	c.JSON(200, gin.H{
-		"message": "welcome" + c.ClientIP(),
+		"base_url": baseURL,
+		"endpoints": []string{
+			baseURL + "/",
+			baseURL + "/health",
+			baseURL + "/chuck",
+			baseURL + "/users",
+			baseURL + "/users/:id",
+		},
 	})
 }
-
-
 
 func NotFound(c *gin.Context) {
 	if c.Request == nil {

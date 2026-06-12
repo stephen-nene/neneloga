@@ -42,6 +42,13 @@ type HealthResponse struct {
     Services []ServiceStatus `json:"services,omitempty"`
 }
 
+// Health godoc
+// @Summary      Health
+// @Description  Health
+// @Tags         health
+// @Produce      json
+// @Success      200  {object}  HealthResponse
+// @Router       /health [get]
 func Health(c *gin.Context) {
     var (
         wg      sync.WaitGroup
@@ -236,6 +243,13 @@ func checkExternalService(name, url string) ServiceStatus {
     return status
 }
 
+// ChuckNorris godoc
+// @Summary      Chuck Norris Joke
+// @Description  Get a random Chuck Norris joke
+// @Tags         fun
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Router       /chuck [get]
 func ChuckNorris(c *gin.Context) {
 	res, err := http.Get("https://api.chucknorris.io/jokes/random")
 	if err != nil {

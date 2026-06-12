@@ -10,6 +10,11 @@ import (
     "neneloga/internal/router"
 )
 
+// @title           Neneloga API
+// @version         1.0
+// @description     This is a sample server for Neneloga.
+// @host            localhost:8080
+// @BasePath        /
 func main() {
     fmt.Println("Starting server...")
 

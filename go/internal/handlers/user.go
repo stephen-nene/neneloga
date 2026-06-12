@@ -8,6 +8,13 @@ import (
 	"neneloga/internal/models"
 )
 
+// GetUsers godoc
+// @Summary      Get all users
+// @Description  Get a list of all users and their logs
+// @Tags         users
+// @Produce      json
+// @Success      200  {array}   models.User
+// @Router       /users/ [get]
 func GetUsers(c *gin.Context) {
 	var users []models.User
 	if err := db.DB.Preload("Logs").Find(&users).Error; err != nil {
@@ -17,6 +24,14 @@ func GetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
+// GetUser godoc
+// @Summary      Get a user
+// @Description  Get a single user by ID
+// @Tags         users
+// @Produce      json
+// @Param        id   path      int  true  "User ID"
+// @Success      200  {object}  models.User
+// @Router       /users/{id} [get]
 func GetUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
@@ -28,6 +43,15 @@ func GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// CreateUser godoc
+// @Summary      Create a user
+// @Description  Create a new user
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.User  true  "User data"
+// @Success      201   {object}  models.User
+// @Router       /users/ [post]
 func CreateUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -42,6 +66,16 @@ func CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
+// UpdateUser godoc
+// @Summary      Update a user
+// @Description  Update a user by ID
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id    path      int          true  "User ID"
+// @Param        user  body      models.User  true  "User data"
+// @Success      200   {object}  models.User
+// @Router       /users/{id} [put]
 func UpdateUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
@@ -63,6 +97,14 @@ func UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// DeleteUser godoc
+// @Summary      Delete a user
+// @Description  Delete a user by ID
+// @Tags         users
+// @Produce      json
+// @Param        id   path      int  true  "User ID"
+// @Success      200  {object}  map[string]string
+// @Router       /users/{id} [delete]
 func DeleteUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")

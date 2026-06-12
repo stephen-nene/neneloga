@@ -1,30 +1,22 @@
 package db
 
 import (
-    // "database/sql"
     "os"
     "fmt"
     "context"
-	"log"
+    "log"
+    "strings"
 
+    "github.com/jackc/pgx/v5"
+    "github.com/joho/godotenv"
+    "gorm.io/driver/postgres"
+    "gorm.io/driver/sqlite"
+    "gorm.io/gorm"
 
-	"github.com/jackc/pgx/v5"
-"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
-	"neneloga/internal/models"
-    // _ "github.com/lib/pq"
+    "neneloga/internal/models"
 )
 
 func Connect2() (*pgx.Conn, error) {
-	// connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-	// 	os.Getenv("POSTGRES_USER"),
-	// 	os.Getenv("POSTGRES_PASSWORD"),
-	// 	os.Getenv("POSTGRES_HOST"),
-	// 	os.Getenv("POSTGRES_PORT"),
-	// 	os.Getenv("POSTGRES_DB"))
-
     err := godotenv.Load()
     if err != nil {
         return nil, fmt.Errorf("failed to load .env file: %w", err)
@@ -55,17 +47,42 @@ func Connect() error {
 
     dsn := os.Getenv("DB_URL")
 
-    database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    var dialector gorm.Dialector
+    if strings.HasPrefix(dsn, "postgres://") || strings.HasPrefix(dsn, "host=") {
+        dialector = postgres.Open(dsn)
+    } else {
+        // Fallback to SQLite
+        dialector = sqlite.Open("neneloga.db")
+    }
+
+    database, err := gorm.Open(dialector, &gorm.Config{})
     if err != nil {
 		return err
     }
 
     DB = database
+	err = DB.AutoMigrate(&models.User{}, &models.Log{})
+	if err != nil {
+		return err
+	}
 
-    return DB.AutoMigrate(
-		&models.User{},
-        &models.Log{},
-    )
+	// 👇 seed only if empty
+	var count int64
+	DB.Model(&models.User{}).Count(&count)
+
+	if count == 0 {
+		DB.Create(&models.User{
+			Username: "Steve",
+			Email:    os.Getenv("ADMIN_EMAIL"),
+			Password: os.Getenv("ADMIN_PASSWORD"),
+		})
+	}
+
+	return nil
+    // return DB.AutoMigrate(
+	// 	&models.User{},
+    //     &models.Log{},
+    // )
 }
 // func InitDB() *sql.DB {
 //     db, _ := sql.Open("postgres", os.Getenv("DB_URL"))

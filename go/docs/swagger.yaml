@@ -1,0 +1,212 @@
+basePath: /
+definitions:
+  internal_handlers.HealthResponse:
+    properties:
+      server:
+        $ref: '#/definitions/internal_handlers.ServiceStatus'
+      services:
+        items:
+          $ref: '#/definitions/internal_handlers.ServiceStatus'
+        type: array
+      status:
+        description: '"UP" or "DEGRADED" or "DOWN"'
+        type: string
+    type: object
+  internal_handlers.ServiceStatus:
+    properties:
+      latency:
+        description: Will be omitted if empty
+        type: string
+      message:
+        description: Will be omitted if empty
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      url:
+        description: Will be omitted if empty
+        type: string
+    type: object
+  neneloga_internal_models.Log:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      level:
+        type: string
+      message:
+        type: string
+      userID:
+        description: Foreign key
+        type: integer
+    type: object
+  neneloga_internal_models.User:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      logs:
+        description: A user can have many logs. This sets up the one-to-many relationship.
+        items:
+          $ref: '#/definitions/neneloga_internal_models.Log'
+        type: array
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a sample server for Neneloga.
+  title: Neneloga API
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: Get a list of all available endpoints
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Home endpoint
+      tags:
+      - system
+  /chuck:
+    get:
+      description: Get a random Chuck Norris joke
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Chuck Norris Joke
+      tags:
+      - fun
+  /health:
+    get:
+      description: Health
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.HealthResponse'
+      summary: Health
+      tags:
+      - health
+  /users/:
+    get:
+      description: Get a list of all users and their logs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/neneloga_internal_models.User'
+            type: array
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/neneloga_internal_models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/neneloga_internal_models.User'
+      summary: Create a user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a user
+      tags:
+      - users
+    get:
+      description: Get a single user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/neneloga_internal_models.User'
+      summary: Get a user
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/neneloga_internal_models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/neneloga_internal_models.User'
+      summary: Update a user
+      tags:
+      - users
+swagger: "2.0"
