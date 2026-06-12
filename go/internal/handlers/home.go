@@ -46,6 +46,8 @@ func Home(c *gin.Context) {
 			baseURL + "/chuck",
 			baseURL + "/users",
 			baseURL + "/users/:id",
+			baseURL + "/swagger/index.html",
+			// baseURL + "/swagger/*any",
 		},
 	})
 }
