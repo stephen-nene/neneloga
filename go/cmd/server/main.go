@@ -18,9 +18,6 @@ import (
 func main() {
     fmt.Println("Starting server...")
 
-    // Setup router
-    r := router.SetupRouter()
-
     // Connect to database
     if err := db.Connect(); err != nil {
         log.Fatalf("Failed to connect to database: %v", err)
@@ -37,6 +34,9 @@ func main() {
         log.Printf("Warning: Redis not available: %v", err)
         // Don't fatal - allow server to run without Redis
     }
+
+    // Setup router
+    r := router.SetupRouter()
 
     // Configure trusted proxies
     proxy := os.Getenv("TRUSTED_PROXY")

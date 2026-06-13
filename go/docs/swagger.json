@@ -71,6 +71,206 @@
                 }
             }
         },
+        "/servers": {
+            "get": {
+                "description": "Get a list of servers with filtering, sorting, and pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "servers"
+                ],
+                "summary": "Get all servers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by status: active, deleted, offline",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by OS",
+                        "name": "os",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by user ID",
+                        "name": "user_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search in name, hostname, IP",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "-created_at",
+                            "created_at",
+                            "-name",
+                            "name",
+                            "-status",
+                            "status"
+                        ],
+                        "type": "string",
+                        "description": "Sort by field (prefix with - for DESC)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default: 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page (default: 10, max: 100)",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a new server to the database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "servers"
+                ],
+                "summary": "Create a new server",
+                "parameters": [
+                    {
+                        "description": "Server object",
+                        "name": "server",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/neneloga_internal_models.Server"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/neneloga_internal_models.Server"
+                        }
+                    }
+                }
+            }
+        },
+        "/servers/{id}": {
+            "get": {
+                "description": "Get server by ID with its logs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "servers"
+                ],
+                "summary": "Get a single server",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Server ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/neneloga_internal_models.Server"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing server",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "servers"
+                ],
+                "summary": "Update a server",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Server ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Server object",
+                        "name": "server",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/neneloga_internal_models.Server"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/neneloga_internal_models.Server"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Change server status to 'deleted' instead of hard delete",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "servers"
+                ],
+                "summary": "Soft delete a server",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Server ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/gin.H"
+                        }
+                    }
+                }
+            }
+        },
         "/users/": {
             "get": {
                 "description": "Get a list of all users and their logs",
@@ -226,6 +426,10 @@
         }
     },
     "definitions": {
+        "gin.H": {
+            "type": "object",
+            "additionalProperties": {}
+        },
         "internal_handlers.HealthResponse": {
             "type": "object",
             "properties": {
@@ -270,7 +474,7 @@
         "neneloga_internal_models.Log": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
@@ -282,16 +486,73 @@
                 "message": {
                     "type": "string"
                 },
+                "serverID": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
                 "userID": {
-                    "description": "Foreign key",
+                    "description": "nullable",
                     "type": "integer"
                 }
             }
         },
+        "neneloga_internal_models.Server": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "ipaddress": {
+                    "type": "string"
+                },
+                "logs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/neneloga_internal_models.Log"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "os": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/neneloga_internal_models.ServerStatus"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "neneloga_internal_models.ServerStatus": {
+            "type": "string",
+            "enum": [
+                "active",
+                "deleted",
+                "offline"
+            ],
+            "x-enum-varnames": [
+                "StatusActive",
+                "StatusDeleted",
+                "StatusOffline"
+            ]
+        },
         "neneloga_internal_models.User": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "email": {
@@ -300,14 +561,17 @@
                 "id": {
                     "type": "integer"
                 },
-                "logs": {
-                    "description": "A user can have many logs. This sets up the one-to-many relationship.",
+                "role": {
+                    "description": "admin, user",
+                    "type": "string"
+                },
+                "servers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/neneloga_internal_models.Log"
+                        "$ref": "#/definitions/neneloga_internal_models.Server"
                     }
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 },
                 "username": {

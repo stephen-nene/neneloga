@@ -11,28 +11,49 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	// Swagger route
+		// Swagger route
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.GET("/",handlers.Home)
 
 	// health
 	r.GET("/health", handlers.Health)
-
+	// fun
 	r.GET("/chuck",handlers.ChuckNorris)
 
-	// r.GET("/users")
 
-	// r.GET("/ping", handlers.Ping)
 
-	user := r.Group("/users")
+	rv1 := r.Group("/v1")
+	// {
+	// rv1.GET("/", handlers.Home)
+	// rv1.GET("/health", handlers.Health)
+	// rv1.GET("/chuck", handlers.ChuckNorris)
+	// }
+
+
 	{
+		user := rv1.Group("/users")
 	    user.GET("/", handlers.GetUsers)
-		user.GET("/:id", handlers.GetUser)
 	    user.POST("/", handlers.CreateUser)
+		user.GET("/:id", handlers.GetUser)
 		user.PUT("/:id", handlers.UpdateUser)
 		user.DELETE("/:id", handlers.DeleteUser)
 	}
+	// Initialize server handler
+	serverHandler := handlers.NewServerHandler()
+
+	// Server routes
+	servers := r.Group("/servers")
+	{
+		servers.GET("", serverHandler.GetServers)           // GET /servers
+		servers.POST("", serverHandler.CreateServer)        // POST /servers
+		servers.GET("/:id", serverHandler.GetServer)        // GET /servers/:id
+		servers.PUT("/:id", serverHandler.UpdateServer)     // PUT /servers/:id
+		servers.DELETE("/:id", serverHandler.DeleteServer)  // DELETE /servers/:id
+	}
+
+
+
 
 	r.NoRoute(handlers.NotFound)
 

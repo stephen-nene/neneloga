@@ -1,5 +1,8 @@
 basePath: /
 definitions:
+  gin.H:
+    additionalProperties: {}
+    type: object
   internal_handlers.HealthResponse:
     properties:
       server:
@@ -30,7 +33,7 @@ definitions:
     type: object
   neneloga_internal_models.Log:
     properties:
-      createdAt:
+      created_at:
         type: string
       id:
         type: integer
@@ -38,24 +41,65 @@ definitions:
         type: string
       message:
         type: string
+      serverID:
+        type: integer
+      updated_at:
+        type: string
       userID:
-        description: Foreign key
+        description: nullable
         type: integer
     type: object
+  neneloga_internal_models.Server:
+    properties:
+      created_at:
+        type: string
+      hostname:
+        type: string
+      id:
+        type: integer
+      ipaddress:
+        type: string
+      logs:
+        items:
+          $ref: '#/definitions/neneloga_internal_models.Log'
+        type: array
+      name:
+        type: string
+      os:
+        type: string
+      status:
+        $ref: '#/definitions/neneloga_internal_models.ServerStatus'
+      updated_at:
+        type: string
+      userID:
+        type: integer
+    type: object
+  neneloga_internal_models.ServerStatus:
+    enum:
+    - active
+    - deleted
+    - offline
+    type: string
+    x-enum-varnames:
+    - StatusActive
+    - StatusDeleted
+    - StatusOffline
   neneloga_internal_models.User:
     properties:
-      createdAt:
+      created_at:
         type: string
       email:
         type: string
       id:
         type: integer
-      logs:
-        description: A user can have many logs. This sets up the one-to-many relationship.
+      role:
+        description: admin, user
+        type: string
+      servers:
         items:
-          $ref: '#/definitions/neneloga_internal_models.Log'
+          $ref: '#/definitions/neneloga_internal_models.Server'
         type: array
-      updatedAt:
+      updated_at:
         type: string
       username:
         type: string
@@ -108,6 +152,140 @@ paths:
       summary: Health
       tags:
       - health
+  /servers:
+    get:
+      description: Get a list of servers with filtering, sorting, and pagination
+      parameters:
+      - description: 'Filter by status: active, deleted, offline'
+        in: query
+        name: status
+        type: string
+      - description: Filter by OS
+        in: query
+        name: os
+        type: string
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - description: Search in name, hostname, IP
+        in: query
+        name: search
+        type: string
+      - description: Sort by field (prefix with - for DESC)
+        enum:
+        - -created_at
+        - created_at
+        - -name
+        - name
+        - -status
+        - status
+        in: query
+        name: sort
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all servers
+      tags:
+      - servers
+    post:
+      consumes:
+      - application/json
+      description: Add a new server to the database
+      parameters:
+      - description: Server object
+        in: body
+        name: server
+        required: true
+        schema:
+          $ref: '#/definitions/neneloga_internal_models.Server'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/neneloga_internal_models.Server'
+      summary: Create a new server
+      tags:
+      - servers
+  /servers/{id}:
+    delete:
+      description: Change server status to 'deleted' instead of hard delete
+      parameters:
+      - description: Server ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Soft delete a server
+      tags:
+      - servers
+    get:
+      description: Get server by ID with its logs
+      parameters:
+      - description: Server ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/neneloga_internal_models.Server'
+      summary: Get a single server
+      tags:
+      - servers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing server
+      parameters:
+      - description: Server ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Server object
+        in: body
+        name: server
+        required: true
+        schema:
+          $ref: '#/definitions/neneloga_internal_models.Server'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/neneloga_internal_models.Server'
+      summary: Update a server
+      tags:
+      - servers
   /users/:
     get:
       description: Get a list of all users and their logs

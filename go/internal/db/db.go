@@ -40,6 +40,9 @@ func Connect2() (*pgx.Conn, error) {
 
 
 var DB *gorm.DB
+// type DB struct {
+// 	*gorm.DB
+// }
 
 func Connect() error {
 	// Attempt to load .env, but don't fail if it doesn't exist (e.g. in production)
@@ -61,7 +64,7 @@ func Connect() error {
     }
 
     DB = database
-	err = DB.AutoMigrate(&models.User{}, &models.Log{})
+	err = DB.AutoMigrate(&models.User{}, &models.Log{}, &models.Server{})
 	if err != nil {
 		return err
 	}
@@ -81,6 +84,7 @@ func Connect() error {
 	return nil
     // return DB.AutoMigrate(
 	// 	&models.User{},
+    //     &models.Server{},
     //     &models.Log{},
     // )
 }

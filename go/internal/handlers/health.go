@@ -2,9 +2,7 @@ package handlers
 
 import (
     "context"
-    "encoding/json"
     "fmt"
-    "io"
     "net/http"
     "os"
     "sync"
@@ -243,63 +241,4 @@ func checkExternalService(name, url string) ServiceStatus {
     return status
 }
 
-// ChuckNorris godoc
-// @Summary      Chuck Norris Joke
-// @Description  Get a random Chuck Norris joke
-// @Tags         fun
-// @Produce      json
-// @Success      200  {object}  map[string]interface{}
-// @Router       /chuck [get]
-func ChuckNorris(c *gin.Context) {
-	res, err := http.Get("https://api.chucknorris.io/jokes/random")
-	if err != nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"status": "ERROR", "message": err.Error()})
-		return
-	}
 
-	formart := c.Query("fmt")
-	// https://api.chucknorris.io/jokes/random
-	// fmt.Println(res)
-	defer res.Body.Close()
-
-	// Read the raw body from the external API
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "ERROR",
-			"message": "Failed to read response",
-		})
-		return
-	}
-
-	var joke ChuckResponse
-	if err := json.Unmarshal(body, &joke); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"status":  "ERROR",
-			"message": "Failed to parse JSON",
-		})
-		return
-	}
-
-	if formart != "html" {
-
-		// c.Data(res.StatusCode, "application/json", body)
-		// default JSON response (cleaned)
-		c.JSON(http.StatusOK, gin.H{
-			"icon_url": joke.IconURL,
-			"joke":     joke.Value,
-		})
-		return
-	}
-	// if format == "html" {
-	html := fmt.Sprintf(`
-			<div>
-				<img src="%s" width="100"/>
-				<p>%s</p>
-				<button onclick="location.reload()">Reload</button>
-			</div>
-		`, joke.IconURL, joke.Value)
-
-	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
-
-}
