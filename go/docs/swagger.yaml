@@ -3,6 +3,18 @@ definitions:
   gin.H:
     additionalProperties: {}
     type: object
+  internal_handlers.AuthResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        description: seconds
+        type: integer
+      refresh_token:
+        type: string
+      user:
+        $ref: '#/definitions/neneloga_internal_models.User'
+    type: object
   internal_handlers.HealthResponse:
     properties:
       server:
@@ -14,6 +26,18 @@ definitions:
       status:
         description: '"UP" or "DEGRADED" or "DOWN"'
         type: string
+    type: object
+  internal_handlers.LoginInput:
+    properties:
+      email:
+        description: Accept either email or username
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
     type: object
   internal_handlers.ServiceStatus:
     properties:
@@ -31,23 +55,20 @@ definitions:
         description: Will be omitted if empty
         type: string
     type: object
-  neneloga_internal_models.Log:
+  internal_handlers.SignupInput:
     properties:
-      created_at:
+      email:
         type: string
-      id:
-        type: integer
-      level:
+      password:
+        minLength: 8
         type: string
-      message:
+      username:
+        minLength: 3
         type: string
-      serverID:
-        type: integer
-      updated_at:
-        type: string
-      userID:
-        description: nullable
-        type: integer
+    required:
+    - email
+    - password
+    - username
     type: object
   neneloga_internal_models.Server:
     properties:
@@ -59,10 +80,6 @@ definitions:
         type: integer
       ipaddress:
         type: string
-      logs:
-        items:
-          $ref: '#/definitions/neneloga_internal_models.Log'
-        type: array
       name:
         type: string
       os:
@@ -95,10 +112,6 @@ definitions:
       role:
         description: admin, user
         type: string
-      servers:
-        items:
-          $ref: '#/definitions/neneloga_internal_models.Server'
-        type: array
       updated_at:
         type: string
       username:
@@ -152,6 +165,83 @@ paths:
       summary: Health
       tags:
       - health
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate with email/username + password, get a JWT pair
+      parameters:
+      - description: Login payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handlers.AuthResponse'
+      summary: Login
+      tags:
+      - auth
+  /logout:
+    post:
+      description: Stateless JWT logout — client should discard tokens
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Logout
+      tags:
+      - auth
+  /me:
+    get:
+      description: Returns the authenticated user's profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/neneloga_internal_models.User'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - auth
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchange a valid refresh token for a new access token
+      parameters:
+      - description: refresh_token
+        in: body
+        name: body
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh access token
+      tags:
+      - auth
   /servers:
     get:
       description: Get a list of servers with filtering, sorting, and pagination
@@ -243,7 +333,7 @@ paths:
       tags:
       - servers
     get:
-      description: Get server by ID with its logs
+      description: Get server by ID.
       parameters:
       - description: Server ID
         in: path
@@ -286,9 +376,31 @@ paths:
       summary: Update a server
       tags:
       - servers
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Create an account and receive a JWT pair
+      parameters:
+      - description: Signup payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handlers.SignupInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_handlers.AuthResponse'
+      summary: Register a new user
+      tags:
+      - auth
   /users/:
     get:
-      description: Get a list of all users and their logs
+      description: Get a list of all users
       produces:
       - application/json
       responses:

@@ -2,22 +2,24 @@ package handlers
 
 import (
 	"net/http"
+
 	"github.com/gin-gonic/gin"
-	
+	"golang.org/x/crypto/bcrypt"
+
 	"neneloga/internal/db"
 	"neneloga/internal/models"
 )
 
 // GetUsers godoc
 // @Summary      Get all users
-// @Description  Get a list of all users and their logs
+// @Description  Get a list of all users
 // @Tags         users
 // @Produce      json
 // @Success      200  {array}   models.User
 // @Router       /users/ [get]
 func GetUsers(c *gin.Context) {
 	var users []models.User
-	if err := db.DB.Preload("Logs").Find(&users).Error; err != nil {
+	if err := db.DB.Find(&users).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch users"})
 		return
 	}
@@ -36,7 +38,7 @@ func GetUser(c *gin.Context) {
 	var user models.User
 	id := c.Param("id")
 
-	if err := db.DB.Preload("Logs").First(&user, id).Error; err != nil {
+	if err := db.DB.First(&user, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
@@ -58,6 +60,18 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Hash the password before saving
+	if user.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "password is required"})
+		return
+	}
+	hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
+		return
+	}
+	user.Password = string(hashed)
 
 	if err := db.DB.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
@@ -91,7 +105,16 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	// Update fields (GORM's Updates method only updates non-zero fields by default)
+	// Hash new password if provided
+	if input.Password != "" {
+		hashed, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash password"})
+			return
+		}
+		input.Password = string(hashed)
+	}
+
 	db.DB.Model(&user).Updates(input)
 
 	c.JSON(http.StatusOK, user)
@@ -118,3 +141,4 @@ func DeleteUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
+

@@ -71,6 +71,126 @@
                 }
             }
         },
+        "/login": {
+            "post": {
+                "description": "Authenticate with email/username + password, get a JWT pair",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login",
+                "parameters": [
+                    {
+                        "description": "Login payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.LoginInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.AuthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "description": "Stateless JWT logout — client should discard tokens",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the authenticated user's profile",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/neneloga_internal_models.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/refresh": {
+            "post": {
+                "description": "Exchange a valid refresh token for a new access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh access token",
+                "parameters": [
+                    {
+                        "description": "refresh_token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/servers": {
             "get": {
                 "description": "Get a list of servers with filtering, sorting, and pagination",
@@ -178,7 +298,7 @@
         },
         "/servers/{id}": {
             "get": {
-                "description": "Get server by ID with its logs",
+                "description": "Get server by ID.",
                 "produces": [
                     "application/json"
                 ],
@@ -271,9 +391,43 @@
                 }
             }
         },
+        "/signup": {
+            "post": {
+                "description": "Create an account and receive a JWT pair",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Signup payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.SignupInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handlers.AuthResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/": {
             "get": {
-                "description": "Get a list of all users and their logs",
+                "description": "Get a list of all users",
                 "produces": [
                     "application/json"
                 ],
@@ -430,6 +584,24 @@
             "type": "object",
             "additionalProperties": {}
         },
+        "internal_handlers.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "description": "seconds",
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/neneloga_internal_models.User"
+                }
+            }
+        },
         "internal_handlers.HealthResponse": {
             "type": "object",
             "properties": {
@@ -444,6 +616,24 @@
                 },
                 "status": {
                     "description": "\"UP\" or \"DEGRADED\" or \"DOWN\"",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handlers.LoginInput": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "description": "Accept either email or username",
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -471,30 +661,24 @@
                 }
             }
         },
-        "neneloga_internal_models.Log": {
+        "internal_handlers.SignupInput": {
             "type": "object",
+            "required": [
+                "email",
+                "password",
+                "username"
+            ],
             "properties": {
-                "created_at": {
+                "email": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
+                "password": {
+                    "type": "string",
+                    "minLength": 8
                 },
-                "level": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "serverID": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "userID": {
-                    "description": "nullable",
-                    "type": "integer"
+                "username": {
+                    "type": "string",
+                    "minLength": 3
                 }
             }
         },
@@ -512,12 +696,6 @@
                 },
                 "ipaddress": {
                     "type": "string"
-                },
-                "logs": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/neneloga_internal_models.Log"
-                    }
                 },
                 "name": {
                     "type": "string"
@@ -564,12 +742,6 @@
                 "role": {
                     "description": "admin, user",
                     "type": "string"
-                },
-                "servers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/neneloga_internal_models.Server"
-                    }
                 },
                 "updated_at": {
                     "type": "string"

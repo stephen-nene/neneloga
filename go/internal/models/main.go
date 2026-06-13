@@ -35,7 +35,7 @@ type User struct {
 	CreatedAt time.Time `gorm:"not null" json:"created_at"`
 	UpdatedAt time.Time `gorm:"not null" json:"updated_at"`
 
-	Servers []Server `gorm:"foreignKey:UserID"`
+	// Servers []Server `gorm:"foreignKey:UserID"`
 }
 
 type Log struct {
@@ -61,5 +61,5 @@ type Server struct {
 
 	// Relationships
 	User User  `gorm:"foreignKey:UserID" json:"-"`
-	Logs []Log `gorm:"foreignKey:ServerID" json:"logs,omitempty"`
+	// Logs []Log `gorm:"foreignKey:ServerID" json:"logs,omitempty"`
 }

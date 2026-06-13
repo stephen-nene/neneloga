@@ -1,14 +1,15 @@
 package db
 
 import (
-    "os"
-    "fmt"
     "context"
+    "fmt"
     "log"
+    "os"
     "strings"
 
     "github.com/jackc/pgx/v5"
     "github.com/joho/godotenv"
+    "golang.org/x/crypto/bcrypt"
     "gorm.io/driver/postgres"
     "gorm.io/driver/sqlite"
     "gorm.io/gorm"
@@ -74,10 +75,15 @@ func Connect() error {
 	DB.Model(&models.User{}).Count(&count)
 
 	if count == 0 {
+		hashed, err := bcrypt.GenerateFromPassword([]byte(os.Getenv("ADMIN_PASSWORD")), bcrypt.DefaultCost)
+		if err != nil {
+			return fmt.Errorf("failed to hash admin password: %w", err)
+		}
 		DB.Create(&models.User{
 			Username: "Steve",
 			Email:    os.Getenv("ADMIN_EMAIL"),
-			Password: os.Getenv("ADMIN_PASSWORD"),
+			Password: string(hashed),
+			Role:     "admin",
 		})
 	}
 

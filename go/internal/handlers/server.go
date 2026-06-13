@@ -197,7 +197,7 @@ func (h *ServerHandler) GetServers(c *gin.Context) {
 
 // GetServer godoc
 // @Summary      Get a single server
-// @Description  Get server by ID with its logs
+// @Description  Get server by ID.
 // @Tags         servers
 // @Produce      json
 // @Param        id   path      int  true  "Server ID"
@@ -212,8 +212,8 @@ func (h *ServerHandler) GetServer(c *gin.Context) {
 
 	var server models.Server
 
-	// Preload logs for the detail view
-	if err := h.DB.Preload("Logs").First(&server, id).Error; err != nil {
+	// Preload logs for the detail view .Preload("Logs")
+	if err := h.DB.First(&server, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Server not found"})
 			return
