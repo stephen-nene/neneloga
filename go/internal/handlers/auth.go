@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -122,6 +123,7 @@ func Signup(c *gin.Context) {
 // @Router       /login [post]
 func Login(c *gin.Context) {
 	var input LoginInput
+	// fmt.Printf(input)
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

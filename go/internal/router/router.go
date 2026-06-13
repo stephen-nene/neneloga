@@ -4,6 +4,7 @@ import (
 	"neneloga/internal/handlers"
 	"neneloga/internal/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -12,6 +13,13 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+
+	// CORS config
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true
+	config.AllowCredentials = true
+	config.AddAllowHeaders("Authorization")
+	r.Use(cors.New(config))
 
 	// ── Public routes ──────────────────────────────────────────────────────
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -26,14 +34,14 @@ func SetupRouter() *gin.Engine {
 	r.POST("/refresh", handlers.Refresh)
 
 	// ── Protected routes (JWT required) ────────────────────────────────────
-	auth := r.Group("/")
+	auth := r.Group("/v1")
 	auth.Use(middleware.RequireAuth())
 	{
 		// Current user profile
 		auth.GET("/me", handlers.Me)
 
 		// Users CRUD
-		users := auth.Group("/v1/users")
+		users := auth.Group("/users")
 		{
 			users.GET("/", handlers.GetUsers)
 			users.POST("/", handlers.CreateUser)

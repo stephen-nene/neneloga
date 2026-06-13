@@ -11,3 +11,6 @@ TOKEN=$(curl -s -X POST http://localhost:8080/login \
 echo "Token: ${TOKEN:0:40}..." && \
 curl -s -o /dev/null -w "GET /servers with token: %{http_code}\n" \
   -H "Authorization: Bearer $TOKEN" http://localhost:8080/servers
+
+
+go run cmd/seed/main.go --users=2 --servers=3 --logs=5
