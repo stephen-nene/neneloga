@@ -11,7 +11,7 @@ import (
 var Client *redis.Client
 
 func Connect() error {
-    Client = redis.NewClient(&redis.Options{
+    client := redis.NewClient(&redis.Options{
         Addr:     os.Getenv("REDIS_URL"), // e.g., "localhost:6379"
         Password: os.Getenv("REDIS_PASSWORD"),
         DB:       0,
@@ -20,6 +20,12 @@ func Connect() error {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
 
-    _, err := Client.Ping(ctx).Result()
-    return err
+    _, err := client.Ping(ctx).Result()
+    if err != nil {
+        client.Close()
+        return err
+    }
+
+    Client = client
+    return nil
 }
